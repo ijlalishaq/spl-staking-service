@@ -43,4 +43,9 @@ pub mod pumpkin_staking {
             reward_updation_signers,
         )
     }
+
+    /// Creates a new staking pool
+    pub fn create_pool(context: Context<CreatePool>) -> Result<()> {
+        create_pool_handler(context)
+    }
 }

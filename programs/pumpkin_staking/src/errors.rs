@@ -7,4 +7,7 @@ pub enum CustomError {
 
     #[msg("Incorrect governance account.")]
     IncorrectGovernance,
+
+    #[msg("Incorrect pool creation signer.")]
+    IncorrectPoolCreationSigner,
 }
