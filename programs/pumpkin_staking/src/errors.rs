@@ -10,4 +10,13 @@ pub enum CustomError {
 
     #[msg("Incorrect pool creation signer.")]
     IncorrectPoolCreationSigner,
+
+    #[msg("Incorrect reward updation signer.")]
+    IncorrectRewardUpdationSigner,
+
+    #[msg("Reward is zero.")]
+    ZeroReward,
+
+    #[msg("Reward distribution duration is zero.")]
+    ZeroRewardDuration,
 }

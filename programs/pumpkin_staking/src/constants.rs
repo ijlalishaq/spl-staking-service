@@ -1,1 +1,2 @@
 pub const INITIALIZATION_SIGNER: &'static str = "9GkVFz98PS3DkAZRu4oE4r3Nxixu18vbHPwtdDJnHyvh";
+pub const SCALE_FACTOR: u128 = 1_000_000_000_000_000_000;

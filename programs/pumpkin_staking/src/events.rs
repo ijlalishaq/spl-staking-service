@@ -11,3 +11,12 @@ pub struct ContractMetadataUpdated {
 pub struct PoolCreated {
     pub mint: Pubkey,
 }
+
+#[event]
+pub struct RewardUpdated {
+    pub mint: Pubkey,
+    pub reward: u64,
+    pub duration: u64,
+    pub updated_reward_per_sec: u64,
+    pub updated_period_end_time: u64,
+}

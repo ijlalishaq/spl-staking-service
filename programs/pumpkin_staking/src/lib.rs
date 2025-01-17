@@ -5,6 +5,7 @@ pub mod errors;
 pub mod events;
 pub mod instructions;
 pub mod states;
+pub mod utils;
 
 use crate::instructions::*;
 
@@ -47,5 +48,15 @@ pub mod pumpkin_staking {
     /// Creates a new staking pool
     pub fn create_pool(context: Context<CreatePool>) -> Result<()> {
         create_pool_handler(context)
+    }
+
+    /// Updates staking rewards for a specific staking pool
+    pub fn update_rewards(
+        context: Context<UpdateRewards>,
+        mint: Pubkey,
+        reward: u64,
+        duration: u64,
+    ) -> Result<()> {
+        update_rewards_handler(context, mint, reward, duration)
     }
 }
