@@ -59,4 +59,14 @@ pub mod pumpkin_staking {
     ) -> Result<()> {
         update_rewards_handler(context, mint, reward, duration)
     }
+
+    /// Allows a user to stake tokens in any staking pool
+    pub fn stake(context: Context<Stake>, amount: u64) -> Result<()> {
+        stake_handler(context, amount)
+    }
+
+    /// Allows a user to unstake their tokens from any staking pool
+    pub fn unstake(context: Context<UnStake>, amount: u64) -> Result<()> {
+        unstake_handler(context, amount)
+    }
 }

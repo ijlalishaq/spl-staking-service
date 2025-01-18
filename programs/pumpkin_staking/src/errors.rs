@@ -14,9 +14,21 @@ pub enum CustomError {
     #[msg("Incorrect reward updation signer.")]
     IncorrectRewardUpdationSigner,
 
+    #[msg("Amount is zero.")]
+    ZeroAmount,
+
     #[msg("Reward is zero.")]
     ZeroReward,
 
     #[msg("Reward distribution duration is zero.")]
     ZeroRewardDuration,
+
+    #[msg("Reward per sec is not set.")]
+    RewardPerSecIsNotSet,
+
+    #[msg("Reward distribution period has expired.")]
+    RewardDistributionPeriodHasExpired,
+
+    #[msg("Amount greater than staked amount.")]
+    AmountGreaterThanStakedAmount,
 }

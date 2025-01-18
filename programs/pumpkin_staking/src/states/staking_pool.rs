@@ -62,4 +62,24 @@ impl StakingPool {
 
         Ok(())
     }
+
+    /// Calculates pending rewards for a user
+    pub fn calculate_pending_rewards(&self, staked_amount: u64, reward_debt: u64) -> Result<u64> {
+        let staked = U256::from(staked_amount);
+        let acc_reward_per_token = U256::from(self.acc_reward_per_token);
+        let scale = U256::from(SCALE_FACTOR);
+        let reward_debt = U256::from(reward_debt);
+
+        // Calculate the pending reward
+        let pending = staked
+            .checked_mul(acc_reward_per_token)
+            .unwrap()
+            .checked_div(scale)
+            .unwrap()
+            .checked_sub(reward_debt)
+            .unwrap()
+            .low_u64();
+
+        Ok(pending)
+    }
 }

@@ -20,3 +20,17 @@ pub struct RewardUpdated {
     pub updated_reward_per_sec: u64,
     pub updated_period_end_time: u64,
 }
+
+#[event]
+pub struct Staked {
+    pub user: Pubkey,
+    pub mint: Pubkey,
+    pub amount: u64,
+}
+
+#[event]
+pub struct Unstaked {
+    pub user: Pubkey,
+    pub mint: Pubkey,
+    pub amount: u64,
+}
