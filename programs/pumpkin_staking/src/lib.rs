@@ -69,4 +69,18 @@ pub mod pumpkin_staking {
     pub fn unstake(context: Context<UnStake>, amount: u64) -> Result<()> {
         unstake_handler(context, amount)
     }
+
+    /// Allows a user to claim their staking rewards on any staking pool
+    pub fn claim(context: Context<Claim>, mint: Pubkey) -> Result<()> {
+        claim_handler(context, mint)
+    }
+
+    /// Fetches the pending rewards for a user on any staking pool
+    pub fn pending_rewards(
+        context: Context<PendingRewards>,
+        user: Pubkey,
+        mint: Pubkey,
+    ) -> Result<u64> {
+        pending_rewards_handler(context, user, mint)
+    }
 }

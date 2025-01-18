@@ -34,3 +34,10 @@ pub struct Unstaked {
     pub mint: Pubkey,
     pub amount: u64,
 }
+
+#[event]
+pub struct Claimed {
+    pub user: Pubkey,
+    pub mint: Pubkey,
+    pub amount: u64,
+}
