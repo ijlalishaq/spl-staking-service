@@ -23,3 +23,8 @@ wallet = "./keys/payer.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/index.ts"
+initialize = "yarn run ts-node ./tasks/initialize.ts"
+updateContractMetadata = "yarn run ts-node ./tasks/updateContractMetadata.ts"
+createPool = "yarn run ts-node ./tasks/createPool.ts"
+topupReward = "yarn run ts-node ./tasks/topupReward.ts"
+logContractMetadata = "yarn run ts-node ./tasks/logContractMetadata.ts"
