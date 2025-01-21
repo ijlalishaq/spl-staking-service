@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 
 use crate::{
+    errors::CustomError,
     events::Claimed,
     states::{SolVault, Staker, StakingPool},
 };
@@ -53,6 +54,16 @@ pub fn claim_handler(ctx: Context<Claim>, _mint: Pubkey) -> Result<()> {
         .unwrap();
 
     if pending_rewards > 0 {
+        // Never pay the vault below its rent-exempt minimum, or the runtime rejects the transaction
+        let sol_vault_lamports = ctx.accounts.sol_vault.to_account_info().lamports();
+        let sol_vault_rent_exempt =
+            Rent::get()?.minimum_balance(8 + std::mem::size_of::<SolVault>());
+
+        require!(
+            sol_vault_lamports.checked_sub(pending_rewards).unwrap_or(0) >= sol_vault_rent_exempt,
+            CustomError::NotEnoughSolInVault
+        );
+
         **ctx
             .accounts
             .sol_vault

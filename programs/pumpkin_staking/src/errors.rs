@@ -31,4 +31,7 @@ pub enum CustomError {
 
     #[msg("Amount greater than staked amount.")]
     AmountGreaterThanStakedAmount,
+
+    #[msg("Not enough sol in the vault.")]
+    NotEnoughSolInVault,
 }
