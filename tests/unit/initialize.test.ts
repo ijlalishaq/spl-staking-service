@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { airdrop } from "../helpers";
+import { airdrop, expectError } from "../helpers";
 import {
   connection,
   program,
@@ -18,6 +18,25 @@ describe("Initialize Contract", () => {
       airdrop(connection, poolCreationSigner),
       airdrop(connection, rewardUpdationSigner),
     ]);
+  });
+
+  // Has to run before the real initialize: Anchor creates the `init` accounts before it
+  // checks the payer's address, so afterwards this would fail with "already in use" instead.
+  it("Should fail to initialize with the wrong signer", async () => {
+    await expectError(
+      program.methods
+        .initialize(
+          governance.publicKey,
+          [poolCreationSigner.publicKey, ZERO_ADDRESS, ZERO_ADDRESS],
+          [rewardUpdationSigner.publicKey, ZERO_ADDRESS, ZERO_ADDRESS]
+        )
+        .accounts({
+          payer: governance.publicKey,
+        })
+        .signers([governance])
+        .rpc(),
+      "IncorrectInitializationSigner"
+    );
   });
 
   it("Should initialize contract correctly", async () => {
@@ -66,20 +85,19 @@ describe("Initialize Contract", () => {
   });
 
   it("Should fail to reinitialize contract", async () => {
-    try {
-      await program.methods
+    // Same (valid) initialization signer, so this can only fail because the accounts exist.
+    await expectError(
+      program.methods
         .initialize(
           governance.publicKey,
           [poolCreationSigner.publicKey, ZERO_ADDRESS, ZERO_ADDRESS],
           [rewardUpdationSigner.publicKey, ZERO_ADDRESS, ZERO_ADDRESS]
         )
         .accounts({
-          payer: governance.publicKey,
+          payer: payer.publicKey,
         })
-        .signers([governance])
-        .rpc();
-
-      assert.fail("Contract initialization should have failed but succeeded");
-    } catch {}
+        .signers([payer])
+        .rpc()
+    );
   });
 });

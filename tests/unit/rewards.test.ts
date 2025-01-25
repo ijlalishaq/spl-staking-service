@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { assert } from "chai";
-import { airdrop } from "../helpers";
+import { airdrop, expectError } from "../helpers";
 import {
   connection,
   program,
@@ -18,88 +18,73 @@ describe("Reward Updation", () => {
   });
 
   it("Should update rewards successfully", async () => {
-    try {
-      await program.methods
-        .updateRewards(mint.publicKey, REWARD, REWARD_DURATION)
-        .accounts({
-          payer: rewardUpdationSigner.publicKey,
-          rewardUpdationSigner: rewardUpdationSigner.publicKey,
-        })
-        .signers([rewardUpdationSigner])
-        .rpc();
+    await program.methods
+      .updateRewards(mint.publicKey, REWARD, REWARD_DURATION)
+      .accounts({
+        payer: rewardUpdationSigner.publicKey,
+        rewardUpdationSigner: rewardUpdationSigner.publicKey,
+      })
+      .signers([rewardUpdationSigner])
+      .rpc();
 
-      const stakingPoolAccount =
-        await program.account.stakingPool.fetchNullable(stakingPool);
+    const stakingPoolAccount = await program.account.stakingPool.fetch(
+      stakingPool
+    );
 
-      assert.isNotNull(
-        stakingPoolAccount,
-        "Staking pool should exist after updating rewards"
-      );
+    const expectedRewardPerSec = REWARD.div(REWARD_DURATION).toNumber();
 
-      const expectedRewardPerSec = REWARD.div(REWARD_DURATION).toNumber();
+    assert.equal(
+      stakingPoolAccount.currentRewardPerSec.toNumber(),
+      expectedRewardPerSec,
+      "Reward per second is incorrect"
+    );
 
-      assert.equal(
-        stakingPoolAccount.currentRewardPerSec.toNumber(),
-        expectedRewardPerSec,
-        `Expected reward per second to be ${expectedRewardPerSec}, but got ${stakingPoolAccount.currentRewardPerSec}`
-      );
-
-      assert.equal(
-        stakingPoolAccount.totalRewardAllocated.toNumber(),
-        REWARD.toNumber(),
-        `Pool total allocated reward is incorrect`
-      );
-    } catch (error) {
-      assert.fail("Reward updation should have succeeded but failed");
-    }
+    assert.equal(
+      stakingPoolAccount.totalRewardAllocated.toNumber(),
+      REWARD.toNumber(),
+      "Pool total allocated reward is incorrect"
+    );
   });
 
   it("Should fail to update rewards with incorrect signer", async () => {
-    try {
-      await program.methods
+    await expectError(
+      program.methods
         .updateRewards(mint.publicKey, REWARD, REWARD_DURATION)
         .accounts({
           payer: poolCreationSigner.publicKey,
           rewardUpdationSigner: poolCreationSigner.publicKey,
         })
-        .signers([poolCreationSigner]) // Incorrect required signer
-        .rpc();
-
-      assert.fail("Reward update should have failed due to incorrect signer");
-    } catch {}
+        .signers([poolCreationSigner])
+        .rpc(),
+      "IncorrectRewardUpdationSigner"
+    );
   });
 
   it("Should fail to update rewards with an invalid reward amount", async () => {
-    try {
-      await program.methods
+    await expectError(
+      program.methods
         .updateRewards(mint.publicKey, new anchor.BN(0), REWARD_DURATION)
         .accounts({
           payer: rewardUpdationSigner.publicKey,
           rewardUpdationSigner: rewardUpdationSigner.publicKey,
         })
         .signers([rewardUpdationSigner])
-        .rpc();
-
-      assert.fail(
-        "Reward update should have failed due to invalid reward amount"
-      );
-    } catch {}
+        .rpc(),
+      "ZeroReward"
+    );
   });
 
   it("Should fail to update rewards with an invalid reward duration", async () => {
-    try {
-      await program.methods
+    await expectError(
+      program.methods
         .updateRewards(mint.publicKey, REWARD, new anchor.BN(0))
         .accounts({
           payer: rewardUpdationSigner.publicKey,
           rewardUpdationSigner: rewardUpdationSigner.publicKey,
         })
         .signers([rewardUpdationSigner])
-        .rpc();
-
-      assert.fail(
-        "Reward update should have failed due to invalid reward duration"
-      );
-    } catch {}
+        .rpc(),
+      "ZeroRewardDuration"
+    );
   });
 });

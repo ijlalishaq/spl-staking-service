@@ -1,4 +1,5 @@
-import { airdrop } from "../helpers";
+import * as anchor from "@coral-xyz/anchor";
+import { airdrop, expectError } from "../helpers";
 import { assert } from "chai";
 import { createMint } from "@solana/spl-token";
 import {
@@ -16,6 +17,7 @@ describe("Create Staking Pool", () => {
     await Promise.all([
       airdrop(connection, governance),
       airdrop(connection, poolCreationSigner),
+      airdrop(connection, rewardUpdationSigner),
     ]);
 
     await createMint(
@@ -59,26 +61,34 @@ describe("Create Staking Pool", () => {
   });
 
   it("Should fail to create staking pool with incorrect signer", async () => {
-    try {
-      await program.methods
+    // A fresh mint, so the only thing wrong is the signer (not an existing pool).
+    const otherMint = anchor.web3.Keypair.generate();
+    await createMint(
+      connection,
+      governance,
+      governance.publicKey,
+      null,
+      6,
+      otherMint
+    );
+
+    await expectError(
+      program.methods
         .createPool()
         .accounts({
-          payer: poolCreationSigner.publicKey,
+          payer: rewardUpdationSigner.publicKey,
           poolCreationSigner: rewardUpdationSigner.publicKey,
-          mint: mint.publicKey,
+          mint: otherMint.publicKey,
         })
-        .signers([rewardUpdationSigner]) // Incorrect required signer
-        .rpc();
-
-      assert.fail(
-        "Staking pool creation should have failed due to incorrect signer"
-      );
-    } catch {}
+        .signers([rewardUpdationSigner])
+        .rpc(),
+      "IncorrectPoolCreationSigner"
+    );
   });
 
   it("Should fail to create a duplicate staking pool", async () => {
-    try {
-      await program.methods
+    await expectError(
+      program.methods
         .createPool()
         .accounts({
           payer: poolCreationSigner.publicKey,
@@ -86,9 +96,7 @@ describe("Create Staking Pool", () => {
           mint: mint.publicKey,
         })
         .signers([poolCreationSigner])
-        .rpc();
-
-      assert.fail("Duplicate staking pool creation should have failed");
-    } catch {}
+        .rpc()
+    );
   });
 });

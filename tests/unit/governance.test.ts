@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { airdrop } from "../helpers";
+import { airdrop, expectError } from "../helpers";
 import { assert } from "chai";
 import {
   connection,
@@ -68,10 +68,10 @@ describe("Governance Updation", () => {
   });
 
   it("Should fail to update contract metadata with incorrect governance", async () => {
-    try {
-      const unauthorizedUser = anchor.web3.Keypair.generate();
+    const unauthorizedUser = anchor.web3.Keypair.generate();
 
-      await program.methods
+    await expectError(
+      program.methods
         .updateContractMetadata(
           newGovernance.publicKey,
           [newPoolCreationSigner.publicKey, ZERO_ADDRESS, ZERO_ADDRESS],
@@ -81,11 +81,8 @@ describe("Governance Updation", () => {
           governance: unauthorizedUser.publicKey,
         })
         .signers([unauthorizedUser])
-        .rpc();
-
-      assert.fail(
-        "Governance update should have failed due to unauthorized signer"
-      );
-    } catch {}
+        .rpc(),
+      "IncorrectGovernance"
+    );
   });
 });

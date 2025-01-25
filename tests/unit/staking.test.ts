@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { airdrop } from "../helpers";
+import { airdrop, expectError } from "../helpers";
 import {
   getOrCreateAssociatedTokenAccount,
   mintTo,
@@ -67,8 +67,8 @@ describe("Staking and Unstaking", () => {
     const stakerAccount = await program.account.staker.fetch(staker);
 
     assert.equal(
-      Number(afterStake.amount),
       stakerAccount.stakedAmount.toNumber(),
+      stakeAmount.toNumber(),
       "User staked balance is incorrect"
     );
 
@@ -77,8 +77,8 @@ describe("Staking and Unstaking", () => {
     );
 
     assert.equal(
-      Number(afterStake.amount),
       poolAmountAfter.totalTokenStaked.toNumber(),
+      stakeAmount.toNumber(),
       "Pool staked balance is incorrect"
     );
   });
@@ -133,49 +133,43 @@ describe("Staking and Unstaking", () => {
   });
 
   it("Should fail to stake more tokens than user has", async () => {
-    try {
-      await program.methods
+    await expectError(
+      program.methods
         .stake(new anchor.BN(2000000000 * 1e6)) // 2 billion tokens (more than user balance)
         .accounts({
           user: user.publicKey,
           mint: mint.publicKey,
         })
         .signers([user])
-        .rpc();
-
-      assert.fail("Staking should have failed due to insufficient balance");
-    } catch {}
+        .rpc()
+    );
   });
 
   it("Should fail to stake zero tokens", async () => {
-    try {
-      await program.methods
+    await expectError(
+      program.methods
         .stake(new anchor.BN(0))
         .accounts({
           user: user.publicKey,
           mint: mint.publicKey,
         })
         .signers([user])
-        .rpc();
-
-      assert.fail("Staking should have failed due to zero amount");
-    } catch {}
+        .rpc(),
+      "ZeroAmount"
+    );
   });
 
   it("Should fail to unstake more tokens than staked", async () => {
-    try {
-      await program.methods
+    await expectError(
+      program.methods
         .unstake(new anchor.BN(1000000000 * 1e6)) // 1 billion tokens (more than staked)
         .accounts({
           user: user.publicKey,
           mint: mint.publicKey,
         })
         .signers([user])
-        .rpc();
-
-      assert.fail(
-        "Unstaking should have failed due to exceeding staked amount"
-      );
-    } catch {}
+        .rpc(),
+      "AmountGreaterThanStakedAmount"
+    );
   });
 });
