@@ -1,4 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
+import { createMint } from "@solana/spl-token";
 import { assert } from "chai";
 import { airdrop, expectError } from "../helpers";
 import {
@@ -85,6 +86,42 @@ describe("Reward Updation", () => {
         .signers([rewardUpdationSigner])
         .rpc(),
       "ZeroRewardDuration"
+    );
+  });
+
+  it("Should fail when the reward rounds down to zero per second", async () => {
+    // 5 lamports over 10 seconds is 0 lamports per second after integer division.
+    // Use a fresh pool so the reward left in the pool above isn't carried over.
+    const otherMint = anchor.web3.Keypair.generate();
+    await airdrop(connection, poolCreationSigner);
+    await createMint(
+      connection,
+      poolCreationSigner,
+      poolCreationSigner.publicKey,
+      null,
+      6,
+      otherMint
+    );
+    await program.methods
+      .createPool()
+      .accounts({
+        payer: poolCreationSigner.publicKey,
+        poolCreationSigner: poolCreationSigner.publicKey,
+        mint: otherMint.publicKey,
+      })
+      .signers([poolCreationSigner])
+      .rpc();
+
+    await expectError(
+      program.methods
+        .updateRewards(otherMint.publicKey, new anchor.BN(5), new anchor.BN(10))
+        .accounts({
+          payer: rewardUpdationSigner.publicKey,
+          rewardUpdationSigner: rewardUpdationSigner.publicKey,
+        })
+        .signers([rewardUpdationSigner])
+        .rpc(),
+      "RewardTooSmallForDuration"
     );
   });
 });

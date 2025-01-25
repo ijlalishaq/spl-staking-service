@@ -92,6 +92,13 @@ pub fn update_rewards_handler(
         staking_pool.current_reward_per_sec = total_reward.checked_div(duration).unwrap();
     }
 
+    // reward / duration is integer division, so a reward smaller than the duration (in lamports
+    // vs seconds) gives a rate of 0 and the deposited SOL would sit in the vault forever
+    require!(
+        staking_pool.current_reward_per_sec > 0,
+        CustomError::RewardTooSmallForDuration
+    );
+
     transfer_sol(
         ctx.accounts.payer.to_account_info(),
         ctx.accounts.sol_vault.to_account_info(),

@@ -34,4 +34,7 @@ pub enum CustomError {
 
     #[msg("Not enough sol in the vault.")]
     NotEnoughSolInVault,
+
+    #[msg("Reward is too small for the duration (reward per sec rounds down to zero).")]
+    RewardTooSmallForDuration,
 }

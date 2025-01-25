@@ -68,9 +68,10 @@ Staked tokens sit in the pool PDA's associated token account.
 
 ## Things to know
 
-- **Rewards nobody earns stay in the vault.** If a pool has a running period but nobody is staked, that stretch of rewards isn't carried forward. It's the usual MasterChef trade-off. The rounding dust from `reward / duration` stays in the vault too.
-- **One vault for all pools.** The accounting is per pool, so a pool can't pay out more than it was funded, but the lamports themselves are shared.
-- **Classic SPL Token only.** Pools use the original Token program, not Token-2022.
+- Rewards nobody earns stay in the vault. If a pool has a running period but nobody is staked, that stretch of rewards isn't carried forward. It's the usual MasterChef trade-off. The rounding dust from `reward / duration` stays in the vault too.
+- One vault for all pools. The accounting is per pool, so a pool can't pay out more than it was funded, but the lamports themselves are shared.
+- Classic SPL Token only. Pools use the original Token program, not Token-2022.
+- `update_rewards` rejects a reward that's smaller than the duration (in lamports vs seconds), because the rate would round down to zero and the SOL would be stuck.
 
 ## Setup
 
