@@ -22,8 +22,9 @@ async function update() {
       [newPoolCreationSigner.publicKey, ZERO_ADDRESS, ZERO_ADDRESS],
       [newRewardUpdationSigner.publicKey, ZERO_ADDRESS, ZERO_ADDRESS]
     )
-    .accounts({})
-    .signers([payer])
+    // Only the current governance key can update; the payer just pays the fee.
+    .accounts({ governance: governance.publicKey })
+    .signers([governance])
     .rpc();
 
   const latestBlockHash = await connection.getLatestBlockhash();
